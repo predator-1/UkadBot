@@ -29,7 +29,7 @@ export class Timetracker{
                 for(let i=0; i<userIds.length; i++){
                     let dialog = await this.CreateDialog(userIds[i].userId, yesterday);
                     if(dialog){
-                        Logger.AddToLog(`Notify userIds ${userIds[i].userId} success`);
+                        Logger.AddToLog(`Notify userIds ${userIds[i].userId} ${userIds[i].email} success`);
                         this.slackConnector.dispatchSalckMessage(dialog);
                     } else {
                         Logger.AddToLog(`Notify userIds ${userIds[i].userId} failed`);
