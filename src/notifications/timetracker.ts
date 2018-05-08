@@ -19,15 +19,15 @@ export class Timetracker{
         this.slackConnector = slackConnector;
     }
 
-    public async Notify(){
-        let email = await this.GetEmails();
+    public async Notify(yesterday:boolean){
+        let email = await this.GetEmails(yesterday);
         if(email){
             Logger.AddToLog('Notify email success');
             let userIds = await this.GetUserId(email);
             if(userIds){
                 Logger.AddToLog('Notify userIds success');
                 for(let i=0; i<userIds.length; i++){
-                    let dialog = await this.CreateDialog(userIds[i].userId);
+                    let dialog = await this.CreateDialog(userIds[i].userId, yesterday);
                     if(dialog){
                         Logger.AddToLog(`Notify userIds ${userIds[i].userId} success`);
                         this.slackConnector.dispatchSalckMessage(dialog);
@@ -43,16 +43,18 @@ export class Timetracker{
         }
     }
 
-    private async GetEmails(): Promise<string[]>{
+    private async GetEmails(yesterday:boolean): Promise<string[]>{
         let ts = new Date().getTime();
-        let yesterday = new Date();
-        yesterday.setTime(ts - 86400000);
+        let current = new Date();
+        if(yesterday){
+            current.setTime(ts - 86400000);
+        }
         let apiReqUrl
-                = `${this.apiTimetracker}${yesterday.getMonth()+1}-${yesterday.getDate()}-${yesterday.getFullYear()}`;
+                = `${this.apiTimetracker}${current.getMonth()+1}-${current.getDate()}-${current.getFullYear()}`;
         let resp = await axios.default.get(apiReqUrl, {headers});
         if(resp.data){
-            return ['alex.golubev@ukad-group.com'];
-            // return JSON.parse(resp.data);
+            // return ['alex.golubev@ukad-group.com'];
+            return JSON.parse(resp.data);
         }
         return [];
     }
@@ -76,11 +78,12 @@ export class Timetracker{
         return findedUsers;
     }
 
-    private async CreateDialog(userId: string): Promise<ISlackMessage>{
+    private async CreateDialog(userId: string, yesterday:boolean): Promise<ISlackMessage>{
         let dialogId = await this.webClient.im.open({user:userId});
         if(dialogId && dialogId.ok){
             let channel = (dialogId as IOpenConversation).channel.id;
-            let text = TimeTrackerDialog.TimeTracker.Intent;
+            let text = yesterday ? TimeTrackerDialog.TimeTracker.Intent.yesterday
+                                 : TimeTrackerDialog.TimeTracker.Intent.today;
             let user = userId;
             let type = 'message';
             return {channel, text, type, user};

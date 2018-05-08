@@ -1,5 +1,6 @@
 import {IAddress, IConnector, IEvent, IMessage, Message, IIdentity, ISourceEventMap} from 'botbuilder';
 import {WebClient} from '@slack/client';
+import {Logger} from './helpers/logger';
 
 export interface ISlackMessage{
     channel:string;
@@ -27,6 +28,7 @@ export class SlackConnector implements IConnector{
         return(type:string, event:any) => {
             if(event && event.user && event.user !== bot.id){
                 if(type === 'message'){
+                    Logger.AddToLog(event);
                     if((event as ISlackMessage).channel.startsWith('D')){
                         // direct message, C-public channel, G-private channel or multi-person DM
                         this.dispatchSalckMessage(event as ISlackMessage);

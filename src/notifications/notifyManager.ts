@@ -8,12 +8,14 @@ export class NotifyManager{
     }
 
     private static StartTimeTracker(slackKey:string, slackConnector:SlackConnector){
-        let callback = () =>{
-            let tt = new Timetracker(slackKey, slackConnector);
-            tt.Notify();
+        let callback = (yesterday:boolean) => { return () =>{
+                let tt = new Timetracker(slackKey, slackConnector);
+                tt.Notify(yesterday);
+            };
         };
-        let everyDay = '0 0 11 * * * *';
-        return schedule.scheduleJob(everyDay, callback);
+
+        return [schedule.scheduleJob('0 00 11 * * MON,TUE,WED,THU,FRI', callback(true))
+                ,schedule.scheduleJob('0 00 21 * * MON,TUE,WED,THU,FRI', callback(false))];
     }
 
 }

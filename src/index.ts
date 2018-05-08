@@ -7,6 +7,11 @@ import { Z_UNKNOWN } from 'zlib';
 import {Timetracker} from './notifications/timetracker';
 import {MainDialog} from './dialogs/mainDialog';
 import {NotifyManager} from './notifications/notifyManager';
+import {Logger} from './helpers/logger';
+
+process.on('uncaughtException', (error) => {
+    Logger.AddToLog(error.stack);
+});
 
 let SLACK_KEY = process.env.SLACK_KEY;
 

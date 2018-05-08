@@ -14,6 +14,7 @@ const logger = winston.createLogger({
     format: winston.format(jsonFormatter)(),
     transports: [
       new winston.transports.File({ filename: 'log.log' }),
+      new winston.transports.Console(),
     ],
 });
 
