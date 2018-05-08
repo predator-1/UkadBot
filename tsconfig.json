@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+      "target": "es2016",
+      "module": "commonjs",
+      "lib": [
+        "es2015", "dom", "es2016"
+      ],
+      "rootDir": "src",
+      "noImplicitAny": true,
+      "sourceMap": true,
+      "outDir": "dist",
+      "moduleResolution": "node",
+      "types": ["node"],
+      "removeComments": true,
+      "baseUrl": "./src"
+    },
+    "exclude": [
+      "node_modules",
+      "dist"
+    ]
+}

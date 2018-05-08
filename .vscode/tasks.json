@@ -1,0 +1,15 @@
+{
+    "version": "0.1.0",
+    "command": "node_modules\\.bin\\tsc",
+    "isShellCommand": true,
+    "showOutput": "always",
+    "suppressTaskName": true,
+    "tasks": [
+        {
+            "taskName": "build",
+            "isBuildCommand": true,
+            "args": ["-p", "."],
+            "problemMatcher": "$tsc"
+        }
+    ]
+}

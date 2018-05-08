@@ -1,0 +1,35 @@
+{
+	"extends": "tslint:recommended",
+	"rules": {
+		"max-line-length": {
+			"options": [
+				120
+			]
+		},
+		"new-parens": true,
+		"no-unused-variable": true,
+		"no-arg": true,
+		"no-bitwise": true,
+		"no-conditional-assignment": true,
+		"no-consecutive-blank-lines": false,
+		"ordered-imports": false,
+		"quotemark": [true, "single"],
+		"no-var-requires":false,
+		"array-type":false,
+		"member-access":false,
+		"typedef-whitespace":false,
+		"prefer-const":false,
+		"whitespace":false,
+		"member-ordering":false,
+        "one-line":false,
+        "prefer-for-of":false,
+        "object-literal-sort-keys":false
+	},
+	"jsRules": {
+		"max-line-length": {
+			"options": [
+				220
+			]
+		}
+	}
+}
