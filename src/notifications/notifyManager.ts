@@ -1,6 +1,7 @@
 import * as schedule from 'node-schedule';
 import {Timetracker} from './timetracker';
 import {SlackConnector} from '../SlackConnector';
+import {Logger} from '../helpers/logger';
 
 export class NotifyManager{
     static Start(slackKey:string, slackConnector:SlackConnector){
@@ -9,8 +10,12 @@ export class NotifyManager{
 
     private static StartTimeTracker(slackKey:string, slackConnector:SlackConnector){
         let callback = (yesterday:boolean) => { return () =>{
-                let tt = new Timetracker(slackKey, slackConnector);
-                tt.Notify(yesterday);
+                try{
+                    let tt = new Timetracker(slackKey, slackConnector);
+                    tt.Notify(yesterday);
+                } catch(e){
+                    Logger.AddToLog(e.stack);
+                }
             };
         };
 
