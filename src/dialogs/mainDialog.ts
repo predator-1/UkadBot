@@ -10,7 +10,7 @@ export class MainDialog{
 
     init(){
         this.bot.dialog('/', async (session) => {
-            session.endDialog('I can\'t help you now. I\'m sorry(');
+            session.endDialog('You can send me your ideas that we can add to our bot. :male-student:');
         });
 
         new TimeTracker().GetDialog(this.bot);
