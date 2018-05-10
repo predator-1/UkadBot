@@ -10,7 +10,6 @@ const jsonFormatter = (logEntry:any) => {
 };
 
 const logger = winston.createLogger({
-    level: 'info',
     format: winston.format(jsonFormatter)(),
     transports: [
       new winston.transports.File({ filename: 'log.log' }),
@@ -20,6 +19,10 @@ const logger = winston.createLogger({
 
 export class Logger{
     static AddToLog(input:any){
-        logger.info(input);
+        logger.log('info', input);
+    }
+
+    static AddError(input:any){
+        logger.log('error', input);
     }
 }

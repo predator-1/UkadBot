@@ -21,7 +21,7 @@ export class Timetracker{
 
     public async Notify(yesterday:boolean){
         let email = await this.GetEmails(yesterday);
-        if(email){
+        if(email && email.length > 0){
             Logger.AddToLog('Notify email success');
             let userIds = await this.GetUserId(email);
             if(userIds){
@@ -51,8 +51,13 @@ export class Timetracker{
         }
         let apiReqUrl
                 = `${this.apiTimetracker}${current.getMonth()+1}-${current.getDate()}-${current.getFullYear()}`;
-        let resp = await axios.default.get(apiReqUrl, {headers});
-        if(resp.data){
+        let resp: axios.AxiosResponse;
+        try{
+            resp = await axios.default.get(apiReqUrl, {headers});
+        } catch (e){
+            Logger.AddError(`GetEmails ${e.stack}`);
+        }
+        if(resp && resp.data){
             // return ['alex.golubev@ukad-group.com'];
             return JSON.parse(resp.data);
         }
@@ -60,26 +65,39 @@ export class Timetracker{
     }
 
     private async GetUserId(emails:string[]): Promise<{email:string, userId:string}[]>{
-        let list = await this.webClient.users.list();
-        let findedUsers:{email:string, userId:string}[] = [];
-        if(list && list.ok){
-            let members = (list as IUserList).members;
-            emails.forEach((email)=>{
-                for(let i=0; i<members.length; i++){
-                    if(members[i].profile.email === email){
-                        findedUsers.push({email,userId:members[i].id});
-                        break;
-                    } else if(i === members.length-1){
-                        Logger.AddToLog(`Can't find userId fro ${email}`);
-                    }
-                }
-            });
+        let list:WebAPICallResult;
+        try{
+            list = await this.webClient.users.list();
+        } catch (e){
+            Logger.AddError(`GetUserId ${e.stack}`);
         }
-        return findedUsers;
+        if(list){
+            let findedUsers:{email:string, userId:string}[] = [];
+            if(list && list.ok){
+                let members = (list as IUserList).members;
+                emails.forEach((email)=>{
+                    for(let i=0; i<members.length; i++){
+                        if(members[i].profile.email === email){
+                            findedUsers.push({email,userId:members[i].id});
+                            break;
+                        } else if(i === members.length-1){
+                            Logger.AddToLog(`Can't find userId fro ${email}`);
+                        }
+                    }
+                });
+            }
+            return findedUsers;
+        }
+        return null;
     }
 
     private async CreateDialog(userId: string, yesterday:boolean): Promise<ISlackMessage>{
-        let dialogId = await this.webClient.im.open({user:userId});
+        let dialogId:WebAPICallResult;
+        try{
+            dialogId = await this.webClient.im.open({user:userId});
+        } catch (e){
+            Logger.AddError(`CreateDialog ${e.stack}`);
+        }
         if(dialogId && dialogId.ok){
             let channel = (dialogId as IOpenConversation).channel.id;
             let text = yesterday ? TimeTrackerDialog.TimeTracker.Intent.yesterday

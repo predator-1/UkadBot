@@ -10,7 +10,11 @@ import {NotifyManager} from './notifications/notifyManager';
 import {Logger} from './helpers/logger';
 
 process.on('uncaughtException', (error) => {
-    Logger.AddToLog(error.stack);
+    Logger.AddError(error.stack);
+});
+
+process.on('unhandledRejection', (error) => {
+    Logger.AddError(error.stack);
 });
 
 let SLACK_KEY = process.env.SLACK_KEY;

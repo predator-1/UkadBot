@@ -10,17 +10,15 @@ export class NotifyManager{
 
     private static StartTimeTracker(slackKey:string, slackConnector:SlackConnector){
         let callback = (yesterday:boolean) => { return () =>{
-                try{
-                    let tt = new Timetracker(slackKey, slackConnector);
-                    tt.Notify(yesterday);
-                } catch(e){
-                    Logger.AddToLog(e.stack);
-                }
+                Logger.AddToLog('try to send notifications');
+                let tt = new Timetracker(slackKey, slackConnector);
+                tt.Notify(yesterday);
             };
         };
 
-        return [schedule.scheduleJob('0 00 11 * * MON,TUE,WED,THU,FRI', callback(true))
-                ,schedule.scheduleJob('0 00 21 * * MON,TUE,WED,THU,FRI', callback(false))];
+        return [schedule.scheduleJob('0 53 9 * * MON,TUE,WED,THU,FRI', callback(true))
+                ,schedule.scheduleJob('0 0 11 * * MON,TUE,WED,THU,FRI', callback(true))
+                ,schedule.scheduleJob('0 0 21 * * MON,TUE,WED,THU,FRI', callback(false))];
     }
 
 }
