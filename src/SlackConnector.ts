@@ -1,6 +1,6 @@
 import {IAddress, IConnector, IEvent, IMessage, Message, IIdentity, ISourceEventMap} from 'botbuilder';
-import {WebClient} from '@slack/client';
 import {Logger} from './helpers/logger';
+import {SlackWebApi} from './SlackWebApi';
 
 export interface ISlackMessage{
     channel:string;
@@ -15,14 +15,9 @@ export interface ISlackMessage{
 let bot:IIdentity = {id:process.env.BOT_ID};
 
 export class SlackConnector implements IConnector{
-    private webClient:WebClient;
     private onEventHandler: (events: IEvent[], cb?: (err: Error) => void) => void;
     private onInvokeHandler: (event: IEvent, cb?: (err: Error, body: any, status?: number) => void) => void;
     private onDispatchEvents: (events: IEvent[], cb?: (events: IEvent[]) => void) => void;
-
-    constructor(slackKey:string){
-        this.webClient = new WebClient(slackKey);
-    }
 
     listen(){
         return(type:string, event:any) => {
@@ -79,8 +74,8 @@ export class SlackConnector implements IConnector{
         let work = async () =>{
             let adrs: IAddress[] = [];
             for(let i=0; i<messages.length; i++){
-                await this.webClient.chat.postMessage({channel:messages[i].address.channelId
-                                            ,text:messages[i].text, as_user:true});
+                await SlackWebApi.SendMessage(messages[i].address.channelId,
+                                                messages[i].text);
                 adrs.push(messages[i].address);
             }
             callback(null, adrs);

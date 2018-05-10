@@ -1,20 +1,23 @@
 import * as axios from 'axios';
-import {WebClient, WebAPICallResult} from '@slack/client';
+import {WebAPICallResult} from '@slack/client';
 import {ISlackMessage, SlackConnector} from 'SlackConnector';
 import {Logger} from '../helpers/logger';
-import * as TimeTrackerDialog from '../dialogs/timetracker';
+import {NotificationsTimetrackerUnfilledToday, NotificationsTimetrackerUnfilledYesterday} from '../dialogs/scenarios';
+import {SlackWebApi} from '../SlackWebApi';
+
+// Retry
+const axiosRetry = require('axios-retry');
+axiosRetry(axios.default, { retries: 3 });
 
 let headers = {
     accept:'application/json',
 };
 
-export class Timetracker{
-    private webClient:WebClient;
+export class TimetrackerUnfiled{
     private apiTimetracker:string;
     private slackConnector:SlackConnector;
 
-    constructor(slackKey:string, slackConnector:SlackConnector) {
-        this.webClient = new WebClient(slackKey);
+    constructor(slackConnector:SlackConnector) {
         this.apiTimetracker = process.env.apiTimetracker;
         this.slackConnector = slackConnector;
     }
@@ -23,9 +26,11 @@ export class Timetracker{
         let email = await this.GetEmails(yesterday);
         if(email && email.length > 0){
             Logger.AddToLog('Notify email success');
+            Logger.AddToChannel(`Timetracker unfill. Finded ${email.length} emails.`);
             let userIds = await this.GetUserId(email);
             if(userIds){
                 Logger.AddToLog('Notify userIds success');
+                Logger.AddToChannel(`Timetracker unfill. Sended ${userIds.length} messages.`);
                 for(let i=0; i<userIds.length; i++){
                     let dialog = await this.CreateDialog(userIds[i].userId, yesterday);
                     if(dialog){
@@ -53,13 +58,13 @@ export class Timetracker{
                 = `${this.apiTimetracker}${current.getMonth()+1}-${current.getDate()}-${current.getFullYear()}`;
         let resp: axios.AxiosResponse;
         try{
-            resp = await axios.default.get(apiReqUrl, {headers});
+            resp = await axios.default.get(apiReqUrl, {headers, timeout:60000});
         } catch (e){
             Logger.AddError(`GetEmails ${e.stack}`);
         }
         if(resp && resp.data){
             // return ['alex.golubev@ukad-group.com'];
-            return JSON.parse(resp.data);
+            return resp.data;
         }
         return [];
     }
@@ -67,7 +72,7 @@ export class Timetracker{
     private async GetUserId(emails:string[]): Promise<{email:string, userId:string}[]>{
         let list:WebAPICallResult;
         try{
-            list = await this.webClient.users.list();
+            list = await SlackWebApi.GetInstance().users.list();
         } catch (e){
             Logger.AddError(`GetUserId ${e.stack}`);
         }
@@ -77,11 +82,11 @@ export class Timetracker{
                 let members = (list as IUserList).members;
                 emails.forEach((email)=>{
                     for(let i=0; i<members.length; i++){
-                        if(members[i].profile.email === email){
+                        if(email !== '' && members[i].profile.email === email){
                             findedUsers.push({email,userId:members[i].id});
                             break;
                         } else if(i === members.length-1){
-                            Logger.AddToLog(`Can't find userId fro ${email}`);
+                            Logger.AddToLog(`Can't find userId from ${email}`);
                         }
                     }
                 });
@@ -94,14 +99,14 @@ export class Timetracker{
     private async CreateDialog(userId: string, yesterday:boolean): Promise<ISlackMessage>{
         let dialogId:WebAPICallResult;
         try{
-            dialogId = await this.webClient.im.open({user:userId});
+            dialogId = await SlackWebApi.GetInstance().im.open({user:userId});
         } catch (e){
             Logger.AddError(`CreateDialog ${e.stack}`);
         }
         if(dialogId && dialogId.ok){
             let channel = (dialogId as IOpenConversation).channel.id;
-            let text = yesterday ? TimeTrackerDialog.TimeTracker.Intent.yesterday
-                                 : TimeTrackerDialog.TimeTracker.Intent.today;
+            let text = yesterday ? NotificationsTimetrackerUnfilledYesterday.Name
+                                 : NotificationsTimetrackerUnfilledToday.Name;
             let user = userId;
             let type = 'message';
             return {channel, text, type, user};

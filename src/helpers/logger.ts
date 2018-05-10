@@ -1,5 +1,7 @@
 import * as winston from 'winston';
 const MESSAGE = Symbol.for('message');
+import {SlackWebApi} from '../SlackWebApi';
+const channel = process.env.logChannel;
 
 
 const jsonFormatter = (logEntry:any) => {
@@ -24,5 +26,14 @@ export class Logger{
 
     static AddError(input:any){
         logger.log('error', input);
+    }
+
+    static AddToChannel(input:string){
+        if(channel){
+            let work = async () => {
+                await SlackWebApi.SendMessage(channel, input);
+            };
+            work();
+        }
     }
 }
