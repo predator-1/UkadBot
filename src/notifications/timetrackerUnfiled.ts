@@ -42,8 +42,10 @@ export class TimetrackerUnfiled{
                 }
             } else {
                 Logger.AddToLog('Notify userIds failed');
+                Logger.AddToChannel('Can\'t find userIds for sending.');
             }
         } else {
+            Logger.AddToChannel('Can\'t find emails for sending.');
             Logger.AddToLog('Notify email failed');
         }
     }
