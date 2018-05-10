@@ -16,8 +16,7 @@ export class NotifyManager{
             };
         };
 
-        return [schedule.scheduleJob('0 53 9 * * MON,TUE,WED,THU,FRI', callback(true))
-                ,schedule.scheduleJob('0 0 11 * * MON,TUE,WED,THU,FRI', callback(true))
+        return [schedule.scheduleJob('0 0 11 * * MON,TUE,WED,THU,FRI', callback(true))
                 ,schedule.scheduleJob('0 0 21 * * MON,TUE,WED,THU,FRI', callback(false))];
     }
 
