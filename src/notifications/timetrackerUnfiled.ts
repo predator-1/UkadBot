@@ -84,7 +84,7 @@ export class TimetrackerUnfiled{
                 let members = (list as IUserList).members;
                 emails.forEach((email)=>{
                     for(let i=0; i<members.length; i++){
-                        if(email !== '' && members[i].profile.email === email){
+                        if(email !== '' && members[i].profile.email.toLocaleLowerCase() === email.toLocaleLowerCase()){
                             findedUsers.push({email,userId:members[i].id});
                             break;
                         } else if(i === members.length-1){
