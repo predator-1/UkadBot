@@ -29,8 +29,13 @@ export class TimetrackerUnfiled{
             Logger.AddToChannel(`Timetracker unfill. Finded ${email.length} emails.`);
             let userIds = await this.GetUserId(email);
             if(userIds){
-                Logger.AddToLog('Notify userIds success');
-                Logger.AddToChannel(`Timetracker unfill. Sended ${userIds.length} messages.`);
+                let sentUsers = userIds.map((elem) => {
+                    return `${elem.email} ${elem.firstname} ${elem.lastname}`;
+                }).join(',');
+
+                Logger.AddToLog(`Notify userIds success. Sent ${userIds.length} messages. ${sentUsers}`);
+                Logger.AddToChannel(`Timetracker unfill. Sent ${userIds.length} messages. ${sentUsers}`);
+
                 for(let i=0; i<userIds.length; i++){
                     let dialog = await this.CreateDialog(userIds[i].userId, yesterday);
                     if(dialog){
@@ -50,14 +55,15 @@ export class TimetrackerUnfiled{
         }
     }
 
-    private async GetEmails(yesterday:boolean): Promise<string[]>{
+    private async GetEmails(yesterday:boolean): Promise<IUser[]>{
         let ts = new Date().getTime();
         let current = new Date();
         if(yesterday){
             current.setTime(ts - 86400000);
         }
         let apiReqUrl
-                = `${this.apiTimetracker}${current.getMonth()+1}-${current.getDate()}-${current.getFullYear()}`;
+                // tslint:disable-next-line:max-line-length
+                = `${this.apiTimetracker}NotEntirelyActiveUsers?notReportedOnly=false&secret=75eb567f-4aee-430d-a718-ab1ecd1f2793&date=${current.getMonth()+1}-${current.getDate()}-${current.getFullYear()}`;
         let resp: axios.AxiosResponse;
         try{
             resp = await axios.default.get(apiReqUrl, {headers, timeout:60000});
@@ -65,13 +71,13 @@ export class TimetrackerUnfiled{
             Logger.AddError(`GetEmails ${e.stack}`);
         }
         if(resp && resp.data){
-            // return ['alex.golubev@ukad-group.com'];
+            // return [{email:'alex.golubev@ukad-group.com', firstname:'', lastname:''}];
             return resp.data;
         }
         return [];
     }
 
-    private async GetUserId(emails:string[]): Promise<{email:string, userId:string}[]>{
+    private async GetUserId(users:IUser[]): Promise<IUserSlack[]>{
         let list:WebAPICallResult;
         try{
             list = await SlackWebApi.GetInstance().users.list();
@@ -79,21 +85,29 @@ export class TimetrackerUnfiled{
             Logger.AddError(`GetUserId ${e.stack}`);
         }
         if(list){
-            let findedUsers:{email:string, userId:string}[] = [];
+            let findedUsers:IUserSlack[] = [];
+            let cantFind:IUser[] = [];
             if(list && list.ok){
                 let members = (list as IUserList).members;
-                emails.forEach((email)=>{
+                users.forEach((user)=>{
                     for(let i=0; i<members.length; i++){
-                        if(email !== '' && members[i].profile.email
-                                    && members[i].profile.email.toLocaleLowerCase() === email.toLocaleLowerCase()){
-                            findedUsers.push({email,userId:members[i].id});
+                        if(this.Match(user, members[i].profile)){
+                            findedUsers.push({email:user.email, userId:members[i].id
+                                , firstname:user.firstname, lastname:user.lastname});
                             break;
                         } else if(i === members.length-1){
-                            Logger.AddToLog(`Can't find userId from ${email}`);
+                            Logger.AddToLog(`Can't find userId from ${user.email} ${user.firstname} ${user.lastname}`);
+                            cantFind.push({email:user.email
+                                , firstname:user.firstname, lastname:user.lastname});
                         }
                     }
                 });
             }
+            let cantFindStr = cantFind.map((elem) => {
+                return `${elem.email} ${elem.firstname} ${elem.lastname}`;
+            }).join(',');
+            Logger.AddToChannel(`Timetracker unfill. Can't find in Slack ${cantFind.length}. They are ${cantFindStr}`);
+
             return findedUsers;
         }
         return null;
@@ -116,12 +130,56 @@ export class TimetrackerUnfiled{
         }
         return null;
     }
+
+    private Match(userApi:IUser, userSlack:ISlackProfile):boolean{
+        if(userApi.email && userSlack.email
+            && userApi.email.toLocaleLowerCase() === userSlack.email.toLocaleLowerCase()){
+            return true;
+        }
+        if(userApi.firstname && userApi.lastname){
+            let userApiFirstname = userApi.firstname.toLocaleLowerCase();
+            let userApiLastname = userApi.lastname.toLocaleLowerCase();
+            if(userSlack.display_name){
+                let slackDisplayName = userSlack.display_name.toLocaleLowerCase().replace(' ', '').replace('.', '');
+                if(`${userApiFirstname}${userApiLastname}` === slackDisplayName
+                    || `${userApiLastname}${userApiFirstname}` === slackDisplayName){
+                    return true;
+                }
+            }
+
+            if(userSlack.real_name){
+                let slackRealName = userSlack.real_name.toLocaleLowerCase().replace(' ', '').replace('.', '');
+                if(`${userApiFirstname}${userApiLastname}` === slackRealName
+                    || `${userApiLastname}${userApiFirstname}` === slackRealName){
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }
 
 interface IUserList extends WebAPICallResult{
-    members:{id:string, profile:{email:string}}[];
+    members:{id:string, profile:ISlackProfile}[];
+}
+
+interface ISlackProfile{
+    email:string;
+    real_name:string;
+    display_name:string;
 }
 
 interface IOpenConversation extends WebAPICallResult{
     channel:{id:string};
+}
+
+interface IUser{
+    email:string;
+    firstname:string;
+    lastname:string;
+}
+
+interface IUserSlack extends IUser{
+    userId:string;
 }
