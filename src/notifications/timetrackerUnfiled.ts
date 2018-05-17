@@ -63,7 +63,7 @@ export class TimetrackerUnfiled{
         }
         let apiReqUrl
                 // tslint:disable-next-line:max-line-length
-                = `${this.apiTimetracker}NotEntirelyActiveUsers?notReportedOnly=false&secret=75eb567f-4aee-430d-a718-ab1ecd1f2793&date=${current.getMonth()+1}-${current.getDate()}-${current.getFullYear()}`;
+                = `${this.apiTimetracker}NotEntirelyActiveUsers?notReportedOnly=true&secret=75eb567f-4aee-430d-a718-ab1ecd1f2793&date=${current.getMonth()+1}-${current.getDate()}-${current.getFullYear()}`;
         let resp: axios.AxiosResponse;
         try{
             resp = await axios.default.get(apiReqUrl, {headers, timeout:60000});
