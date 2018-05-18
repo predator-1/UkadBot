@@ -23,7 +23,7 @@ export class NotifyManager{
                 ( async () => {
                     Logger.AddToLog('try to send TimeTrackerNotify notifications');
                     let tt = new TimetrackerUnfiled(slackConnector);
-                    tt.Notify(yesterday);
+                    await tt.Notify(yesterday);
                 })();
             };
         };
