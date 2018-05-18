@@ -4,11 +4,12 @@ import {NotificationsTimetrackerUnfilledYesterday} from './NotificationsTimetrac
 import {TimetrackerUnfilled} from './TimetrackerUnfilled';
 import {Wellcome} from './Wellcome';
 import {GetHolidays} from './GetHolidays';
+import {Thanks} from './Thanks';
 
 
 export {None, NotificationsTimetrackerUnfilledToday
-    ,NotificationsTimetrackerUnfilledYesterday, TimetrackerUnfilled, Wellcome, GetHolidays};
+    ,NotificationsTimetrackerUnfilledYesterday, TimetrackerUnfilled, Wellcome, GetHolidays, Thanks};
 
 const All = [None, NotificationsTimetrackerUnfilledToday
-    ,NotificationsTimetrackerUnfilledYesterday, TimetrackerUnfilled, Wellcome, GetHolidays];
+    ,NotificationsTimetrackerUnfilledYesterday, TimetrackerUnfilled, Wellcome, GetHolidays, Thanks];
 export {All};
