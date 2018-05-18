@@ -8,7 +8,7 @@ export class Thanks extends Dialog {
 
     public RegisterDialog(intentDialog:IntentDialog){
         intentDialog.matches(Thanks.Name, async (session,args) => {
-            session.endDialog('You\'re wellcome :wink:');
+            session.endDialog('You\'re welcome :wink:');
         });
     }
 }
