@@ -18,6 +18,15 @@ export class GetHolidays extends Dialog {
     private async GetHolidaysStr():Promise<string>{
         let out = '';
         let holidays = await Holidays.GetHolidays();
+        holidays = holidays.sort((a, b) =>{
+            if (a.Name > b.Name) {
+                return 1;
+            }
+            if (a.Name < b.Name) {
+                return -1;
+            }
+            return 0;
+        });
         holidays.forEach((holiday) => {
             out += `${holiday.Name} -`;
             holiday.Dates.forEach((date) => {
