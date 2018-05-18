@@ -23,10 +23,10 @@ export class GetHolidays extends Dialog {
             holiday.Dates.forEach((date) => {
                 if(date.from.getDate() === date.to.getDate()
                 && date.from.getMonth() === date.to.getMonth()){
-                    out += ` ${date.from.getDate()}.${date.from.getMonth()+1}.${date.from.getFullYear()},`;
+                    out += ` ${date.from.getDate()}/${date.from.getMonth()+1},`;
                 } else {
                     // tslint:disable-next-line:max-line-length
-                    out += ` ${date.from.getDate()}.${date.from.getMonth()+1}.${date.from.getFullYear()}-${date.to.getDate()}.${date.to.getMonth()+1}.${date.to.getFullYear()},`;
+                    out += ` (${date.from.getDate()}/${date.from.getMonth()+1} - ${date.to.getDate()}/${date.to.getMonth()+1}),`;
                 }
             });
             out = out.substring(0, out.length - 1);
