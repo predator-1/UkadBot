@@ -25,6 +25,26 @@
             "preLaunchTask": "build"
         },
         {
+            "type": "node",
+            "request": "launch",
+            "name": "Current file",
+            "program": "${file}",
+            "stopOnEntry": false,
+            "args": [],
+            "cwd": "${workspaceRoot}",
+            "env": { "NODE_ENV": "development"},
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceRoot}/dist/**/**/**/**/*.js"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "console": "integratedTerminal",          
+            "runtimeArgs": [
+                "--nolazy"
+            ],
+            "preLaunchTask": "build"
+        },
+        {
             "name": "Attach",
             "type": "node",
             "request": "attach",

@@ -3,7 +3,7 @@ import {WebAPICallResult} from '@slack/client';
 import {ISlackMessage, SlackConnector} from 'SlackConnector';
 import {Logger} from '../helpers/logger';
 import {NotificationsTimetrackerUnfilledToday, NotificationsTimetrackerUnfilledYesterday} from '../dialogs/scenarios';
-import {SlackWebApi} from '../SlackWebApi';
+import {SlackWebApi, IUserList, ISlackProfile, IOpenConversation} from '../SlackWebApi';
 
 // Retry
 const axiosRetry = require('axios-retry');
@@ -114,14 +114,8 @@ export class TimetrackerUnfiled{
     }
 
     private async CreateDialog(userId: string, yesterday:boolean): Promise<ISlackMessage>{
-        let dialogId:WebAPICallResult;
-        try{
-            dialogId = await SlackWebApi.GetInstance().im.open({user:userId});
-        } catch (e){
-            Logger.AddError(`CreateDialog ${e.stack}`);
-        }
-        if(dialogId && dialogId.ok){
-            let channel = (dialogId as IOpenConversation).channel.id;
+        let channel = await SlackWebApi.OpenChannel(userId);
+        if(channel){
             let text = yesterday ? NotificationsTimetrackerUnfilledYesterday.Name
                                  : NotificationsTimetrackerUnfilledToday.Name;
             let user = userId;
@@ -158,20 +152,6 @@ export class TimetrackerUnfiled{
 
         return false;
     }
-}
-
-interface IUserList extends WebAPICallResult{
-    members:{id:string, profile:ISlackProfile}[];
-}
-
-interface ISlackProfile{
-    email:string;
-    real_name:string;
-    display_name:string;
-}
-
-interface IOpenConversation extends WebAPICallResult{
-    channel:{id:string};
 }
 
 interface IUser{
